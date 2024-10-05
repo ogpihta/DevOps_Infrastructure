@@ -1,0 +1,26 @@
+stages:
+  - build
+  - deploy
+
+build_backend:
+  stage: build
+  script:
+    - docker build -t registry.gitlab.com/ogpihta/backend:$CI_COMMIT_SHA ./backend
+    - docker push registry.gitlab.com/ogpihta/backend:$CI_COMMIT_SHA
+  only:
+    - main
+
+build_frontend:
+  stage: build
+  script:
+    - docker build -t registry.gitlab.com/ogpihta/frontend:$CI_COMMIT_SHA ./frontend
+    - docker push registry.gitlab.com/ogpihta/frontend:$CI_COMMIT_SHA
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  script:
+    - ansible-playbook -i ansible/inventory ansible/playbooks/deploy.yaml
+  only:
+    - main

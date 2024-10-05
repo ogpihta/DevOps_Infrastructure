@@ -1,0 +1,9 @@
+---
+- name: Deploy backend and frontend applications
+  hosts: master
+  remote_user: ksenia
+  become: true
+  become_user: root
+  tasks:
+    - name: Deploy backend and frontend to Kubernetes
+      shell: kubectl apply -f ../../k8s/

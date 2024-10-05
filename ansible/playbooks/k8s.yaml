@@ -1,0 +1,52 @@
+---
+- name: install k8s on master node
+  hosts: master
+  remote_user: ksenia
+  become: true
+  become_user: root
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Install kubeadm, kubelet, kubectl
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Initialize Kubernetes Master
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+
+    - name: Set up kubeconfig for root user
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: ~/.kube/config
+        remote_src: yes
+      become_user: root
+
+    - name: Apply Flannel CNI (Network Plugin)
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+- name: setting k8s on worker nodes
+  hosts: nodes
+  remote_user: ksenia
+  become: true
+  become_user: root
+  tasks:
+    - name: Install kubeadm, kubelet, kubectl
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Join worker nodes to Kubernetes cluster
+      shell: kubeadm join --token {{ token }} {{ 192.168.64.17 }}:6443 --discovery-token-ca-cert-hash sha256:{{ hash }}

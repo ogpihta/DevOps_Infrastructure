@@ -1,0 +1,10 @@
+[master]
+ip_master ansible_user=ksenia
+
+[nodes]
+ip_node1 ansible_user=ksenia
+ip_node2 ansible_user=ksenia
+
+[k8s_cluster:children]
+master
+nodes
